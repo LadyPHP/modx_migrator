@@ -89,7 +89,7 @@ function unzip($file)
                     }
                 }
                 if (zip_entry_open($zip, $zip_entry, 'r')) {
-                    if (!file_exists($complete_name)) continue;
+                    //if (!file_exists($complete_name)) continue;
                     $fd = fopen($complete_name, 'w');
                     fwrite($fd, zip_entry_read($zip_entry, zip_entry_filesize($zip_entry)));
                     fclose($fd);
