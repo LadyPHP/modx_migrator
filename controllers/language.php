@@ -37,7 +37,7 @@ $install->settings->erase();
 
 $langs = $install->lexicon->getLanguageList();
 $parser->set('langs', $langs);
-$actualLanguage = 'ru';
+
 $actualLanguage = $install->lexicon->getLanguage();
 $languages = '';
 foreach ($langs as $language) {

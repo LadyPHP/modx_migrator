@@ -27,8 +27,7 @@ $isCommandLine = php_sapi_name() == 'cli';
 if ($isCommandLine) {
     foreach ($argv as $idx => $argv) {
         $p = explode('=',ltrim($argv,'--'));
-@ ini_set('date.timezone', 'Europe/Moscow');
-@ ini_set('magic_quotes_runtime', 0);
+        if (isset($p[1])) {
             $_REQUEST[$p[0]] = $p[1];
         }
     }

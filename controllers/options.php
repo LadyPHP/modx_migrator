@@ -12,7 +12,7 @@
  * @var modInstall $install
  * @var modInstallParser $parser
  * @var modInstallRequest $this
-    $_POST['installmode'] = isset ($_POST['installmode']) ? intval($_POST['installmode']) : modInstall::MODE_UPGRADE_REVO_ADVANCED;
+ *
  * @package setup
  */
 $install->settings->check();
@@ -39,7 +39,7 @@ if (!empty($_POST['proceed'])) {
 
     /* then store in cache */
     $install->settings->store($settings);
-$installmode = modInstall::MODE_UPGRADE_REVO_ADVANCED;
+
     $installmode = $install->settings->get('installmode');
     if (in_array($installmode,array(modInstall::MODE_UPGRADE_REVO_ADVANCED,modInstall::MODE_NEW))) {
         $this->proceed('database');
