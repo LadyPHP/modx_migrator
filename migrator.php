@@ -12,7 +12,7 @@ $version_url = 'https://ilyaut.ru/download-modx/?api=getmodxlastversion';
 // массив со сслыками для скачивания
 $distibutive_urls = [
     'https://ilyaut.ru/modx/modx-',
-    'https://modx.com/download/direct/modx-'
+    'https://modx.com/download/direct/modx-',
 ];
 // имя сохраняемого архива дистрибутива
 $zip_name = 'modx.zip';
@@ -20,7 +20,6 @@ $zip_name = 'modx.zip';
 $files_modify = [
     'index.php',
     'controllers/install.php',
-    //'includes/modMigrateToDev.class.php'
 ];
 
 
@@ -39,6 +38,7 @@ function downloadLastVersion($version_url, $urls, $file_path)
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
         //curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
@@ -89,10 +89,10 @@ function unzip($file)
                     }
                 }
                 if (zip_entry_open($zip, $zip_entry, 'r')) {
-                    //if (!file_exists($complete_name)) continue;
-                    $fd = fopen($complete_name, 'w');
-                    fwrite($fd, zip_entry_read($zip_entry, zip_entry_filesize($zip_entry)));
-                    fclose($fd);
+                    if ($tmp !== null && $fd = fopen($complete_name, 'w')) {
+                        fwrite($fd, zip_entry_read($zip_entry, zip_entry_filesize($zip_entry)));
+                        fclose($fd);
+                    }
                     zip_entry_close($zip_entry);
                 }
 
@@ -160,3 +160,4 @@ return $parser->render(\'install.tpl\');
 }
 
 unset($modify_content);
+exit('Кастомизация пакета установки завершена');
