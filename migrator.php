@@ -57,8 +57,7 @@ function downloadLastVersion($version_url, $urls, $file_path)
 // Функция распаковки файлов дистрибутива из архива
 function unzip($file)
 {
-    global $amode;
-
+    $amode = 0775;
     if (!extension_loaded('zip')) {
         if (strtoupper(substr(PHP_OS, 0, 3) == 'WIN')) {
             if (!@dl('php_zip.dll')) return 0;
@@ -72,20 +71,19 @@ function unzip($file)
         $old_umask = umask(0);
         while ($zip_entry = zip_read($zip)) {
             if (zip_entry_filesize($zip_entry) > 0) {
-                // str_replace must be used under windows to convert "/" into "\"
-                $complete_path = str_replace('/', '\\', dirname(zip_entry_name($zip_entry)));
-                $complete_name = str_replace('/', '\\', zip_entry_name($zip_entry));
-                $complete_name_arr = explode('\\', $complete_name);
-                $complete_name = str_replace($complete_name_arr[0] . '\\' . $complete_name_arr[1] . '\\', '', $complete_name);
+                $complete_path = dirname(zip_entry_name($zip_entry));
+                $complete_name = zip_entry_name($zip_entry);
+                $complete_name_arr = explode('/', $complete_name);
+                $complete_name = str_replace($complete_name_arr[0] . '/' . $complete_name_arr[1] . '/', '', $complete_name);
 
                 if (!file_exists($complete_path) && strpos($complete_path, 'core') === false) {
                     $tmp = '';
-                    foreach (explode('\\', $complete_path) as $i => $k) {
+                    foreach (explode('/', $complete_path) as $i => $k) {
                         if ($i < 2) continue;
-                        $tmp .= $k . '\\';
+                        $tmp .= $k . '/';
                         if (!file_exists($tmp)) {
                             @mkdir($tmp, $amode);
-                        }
+                        } else chmod($tmp, $amode);
                     }
                 }
                 if (zip_entry_open($zip, $zip_entry, 'r')) {
@@ -131,6 +129,18 @@ foreach ($files_modify as $file) {
             $modify_content = str_replace('<?php', '<?php
 if (stripos($_SERVER[\'HTTP_HOST\'], \'.dev\') === false) die(\'<html><head><title></title></head><body><h1>FATAL ERROR: MODX Migrate cannot continue in <span style="color:red">PRODACTION SERVER</span>! No-no-no</h1></body></html>\');
                     ', $file_content);
+            $modify_content = str_replace('$modInstall = new modInstall();', '
+// меняем права на файлы и папки ядра и установщика
+if (!$_REQUEST[\'action\']) {
+    if (!include_once(MODX_SETUP_PATH . \'includes/modinstallPermissions.class.php\')) {
+        die(\'<html><head><title></title></head><body><h1>FATAL ERROR: MODX Migrate cannot continue.</h1><p>Make sure you have uploaded all of the migrate/ files; your migrate/includes/modinstallPermissions.class.php file is missing.</p></body></html>\');
+    }
+    $files_distr = new modinstallPermissions();
+    $files_distr->changePermissions();
+}
+
+$modInstall = new modInstall();
+                    ', $modify_content);
             break;
         case 'controllers/install.php':
             $modify_content = str_replace('return $parser->render(\'install.tpl\');', '

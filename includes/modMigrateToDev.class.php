@@ -34,9 +34,13 @@ class modMigrateToDev
 
             foreach ($filessql as $query_type => $filesql) {
                 if (!file_exists($filesql)) echo 'не найден файл';
+
                 $sqldate = file_get_contents($filesql);
                 $sqldate = str_replace('mgrt_', $table_prefix, $sqldate);
-                if ($query_type == 'demo_content') $sqldate = str_replace('MGRT_HOST', $_SERVER['HTTP_HOST'], $sqldate);
+                $new_base_url = !empty($_SERVER['HTTPS']) ? 'https://' : 'http://';
+                $new_base_url .= $_SERVER['HTTP_HOST'];
+
+                if ($query_type == 'demo_content') $sqldate = str_replace('https://MGRT_HOST', $new_base_url, $sqldate);
                 if (is_writable($filesql) === false) @chmod($filesql, 0664);
                 file_put_contents($filesql, $sqldate);
 
